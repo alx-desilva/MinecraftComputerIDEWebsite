@@ -1,0 +1,654 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minecraft Computer IDE</title>
+
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/theme/material-darker.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --green: #3fb950;
+      --cyan: #79c0ff;
+      --yellow: #e3b341;
+      --red: #f85149;
+      --purple: #d2a8ff;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    header h1 span { color: var(--muted); font-weight: 400; }
+
+    #name-input {
+      flex: 1;
+      max-width: 260px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    #name-input:focus { border-color: var(--green); }
+    #name-input::placeholder { color: var(--muted); }
+
+    #submit-btn {
+      background: var(--green);
+      color: #0d1117;
+      border: none;
+      padding: 7px 20px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    #submit-btn:hover { opacity: 0.85; }
+
+    #status-msg {
+      font-size: 0.85rem;
+      font-weight: 500;
+      min-width: 180px;
+    }
+    #status-msg.ok  { color: var(--green); }
+    #status-msg.err { color: var(--red); }
+
+    /* ── Main layout ── */
+    .main {
+      display: grid;
+      grid-template-columns: 210px 1fr 220px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Panels ── */
+    .panel {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 12px;
+      gap: 6px;
+    }
+    .panel:last-child { border-right: none; border-left: 1px solid var(--border); }
+
+    .panel-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-gap { margin-top: 10px; }
+
+    /* ── Instruction buttons ── */
+    .instr-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 10px;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.15s, background 0.15s;
+      width: 100%;
+    }
+    .instr-btn:hover { border-color: var(--cyan); background: #1c2230; }
+
+    .instr-btn .instr-name {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+    .instr-btn .instr-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* ── Register buttons ── */
+    .reg-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+    .reg-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--purple);
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 2px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      text-align: center;
+    }
+    .reg-btn:hover { border-color: var(--purple); background: #1e1a2e; }
+
+    .reg-note {
+      font-size: 0.72rem;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    /* ── Binary converter ── */
+    .converter-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .converter-row label { font-size: 0.75rem; color: var(--muted); min-width: 28px; }
+    .converter-input {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      outline: none;
+      min-width: 0;
+    }
+    .converter-input:focus { border-color: var(--yellow); }
+    .converter-result {
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: var(--yellow);
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .insert-btn {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--yellow);
+      color: var(--yellow);
+      border-radius: 5px;
+      padding: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: background 0.15s;
+    }
+    .insert-btn:hover { background: #1f1c0e; }
+
+    .bin-visual {
+      display: flex;
+      gap: 3px;
+      margin-top: 6px;
+      justify-content: center;
+    }
+    .bit-box {
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: background 0.1s, color 0.1s;
+    }
+    .bit-box.on  { background: var(--green);  color: #0d1117; border-color: var(--green); }
+    .bit-box.off { background: var(--bg);     color: var(--muted); }
+
+    /* ── CodeMirror editor ── */
+    .editor-wrap {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .editor-toolbar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 6px 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .editor-toolbar span { color: var(--green); font-family: monospace; }
+
+    /* ── Script manager bar ── */
+    .script-bar {
+      background: #111820;
+      border-bottom: 1px solid var(--border);
+      padding: 5px 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .script-bar label { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+    .script-name-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      outline: none;
+      width: 130px;
+    }
+    .script-name-input:focus { border-color: var(--green); }
+    .save-btn {
+      background: transparent;
+      border: 1px solid var(--green);
+      color: var(--green);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .save-btn:hover { background: #0d2010; }
+    .script-divider { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
+    .saved-scripts { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+    .script-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2px 8px 2px 10px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .script-chip:hover { border-color: var(--cyan); color: var(--cyan); }
+    .script-chip .chip-del {
+      color: var(--muted);
+      font-size: 0.7rem;
+      line-height: 1;
+      padding: 1px 2px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .script-chip .chip-del:hover { color: var(--red); }
+    .no-scripts { font-size: 0.72rem; color: var(--muted); font-style: italic; }
+
+    .CodeMirror {
+      flex: 1;
+      height: 100%;
+      font-size: 0.9rem;
+      font-family: 'Courier New', monospace;
+      line-height: 1.6;
+    }
+    .CodeMirror-scroll { height: 100%; }
+
+    /* Syntax colours */
+    .cm-keyword  { color: #79c0ff !important; font-weight: bold; }
+    .cm-variable { color: #d2a8ff !important; }
+    .cm-number   { color: #e3b341 !important; }
+    .cm-comment  { color: #8b949e !important; font-style: italic; }
+    .cm-error    { color: #f85149 !important; text-decoration: underline wavy #f85149; }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <h1>Minecraft Computer <span>IDE</span></h1>
+  <input id="name-input" type="text" placeholder="Enter your name..." maxlength="50" />
+  <button id="submit-btn" onclick="submitCode()">Send Code</button>
+  <div id="status-msg"></div>
+</header>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- LEFT: Instructions -->
+  <div class="panel" id="instr-panel">
+    <div class="panel-title">Instructions</div>
+    <div class="panel-title section-gap" style="border:none; color: var(--muted); font-size:0.68rem; text-transform: none; letter-spacing:0; padding-bottom:0;">
+      Click to insert at cursor
+    </div>
+  </div>
+
+  <!-- CENTER: Editor -->
+  <div class="editor-wrap">
+    <div class="editor-toolbar">
+      Load/Jump: &nbsp;<span>LDR R0 0001</span>
+      &nbsp;|&nbsp; ALU ops: &nbsp;<span>ADD R0 R1 R2</span>&nbsp; (src1 src2 dest)
+      &nbsp;|&nbsp; One instruction per line
+    </div>
+    <div class="script-bar">
+      <label>Save as:</label>
+      <input class="script-name-input" id="script-name" type="text" placeholder="my-script" maxlength="40" />
+      <button class="save-btn" onclick="saveScript()">Save</button>
+      <div class="script-divider"></div>
+      <div class="saved-scripts" id="saved-scripts"></div>
+    </div>
+    <textarea id="editor"></textarea>
+  </div>
+
+  <!-- RIGHT: Registers + Binary Converter -->
+  <div class="panel">
+    <div class="panel-title">Registers</div>
+    <p class="reg-note">Registers are like variables — they hold a number. Click one to insert it.</p>
+    <div class="reg-grid" id="reg-grid"></div>
+    <p class="reg-note section-gap">R0–R15 are all general purpose. Use any you like!</p>
+
+    <div class="panel-title section-gap">Binary Converter</div>
+    <p class="reg-note">Binary is how computers count using only 0s and 1s.</p>
+
+    <div class="converter-row" style="margin-top:8px;">
+      <label>Dec</label>
+      <input class="converter-input" id="dec-input" type="number" min="0" max="15" placeholder="0–15" />
+      <span class="converter-result" id="dec-result">????</span>
+    </div>
+
+    <div class="bin-visual" id="bit-boxes">
+      <div class="bit-box off" id="b3">0</div>
+      <div class="bit-box off" id="b2">0</div>
+      <div class="bit-box off" id="b1">0</div>
+      <div class="bit-box off" id="b0">0</div>
+    </div>
+
+    <div class="converter-row" style="margin-top:10px;">
+      <label>Bin</label>
+      <input class="converter-input" id="bin-input" type="text" maxlength="4" placeholder="0000" />
+      <span class="converter-result" id="bin-result">0</span>
+    </div>
+
+    <p class="reg-note" style="margin-top:6px;">
+      Each box above is one <strong style="color:var(--text)">bit</strong>. 4 bits = one value (0–15).
+    </p>
+    <button class="insert-btn" onclick="insertConverterValue()">Insert binary value into editor</button>
+  </div>
+</div>
+
+<!-- CodeMirror scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.17/codemirror.min.js"></script>
+
+<script>
+// ── Instruction definitions ──
+const INSTRUCTIONS = [
+  { name: "NOP",  template: "NOP",             desc: "Do nothing (no operation)" },
+  { name: "LDR",  template: "LDR R0 0001",     desc: "Load a value into a register" },
+  { name: "ADD",  template: "ADD R0 R1 R2",    desc: "Add R0 + R1, save result in R2" },
+  { name: "SUB",  template: "SUB R0 R1 R2",    desc: "Subtract R1 from R0, save result in R2" },
+  { name: "AND",  template: "AND R0 R1 R2",    desc: "Bitwise AND R0 & R1, save result in R2" },
+  { name: "OR",   template: "OR R0 R1 R2",     desc: "Bitwise OR R0 | R1, save result in R2" },
+  { name: "NAND", template: "NAND R0 R1 R2",   desc: "Bitwise NAND R0 & R1, save result in R2" },
+  { name: "XOR",  template: "XOR R0 R1 R2",    desc: "Bitwise XOR R0 ^ R1, save result in R2" },
+  { name: "HLT",  template: "HLT",             desc: "Stop the program" },
+  { name: "JMP",  template: "JMP 0000",        desc: "Jump to a line (binary address)" },
+  { name: "LOD",  template: "LOD R0 R1",       desc: "Load value from memory address in R1 → R0" },
+  { name: "STR",  template: "STR R0 R1",       desc: "Store R0 into memory address in R1" },
+];
+
+// ── Build instruction buttons ──
+const instrPanel = document.getElementById("instr-panel");
+INSTRUCTIONS.forEach(instr => {
+  const btn = document.createElement("button");
+  btn.className = "instr-btn";
+  btn.innerHTML = `<div class="instr-name">${instr.name}</div><div class="instr-desc">${instr.desc}</div>`;
+  btn.onclick = () => insertText(instr.template + "\n");
+  instrPanel.appendChild(btn);
+});
+
+// ── Build register buttons ──
+const regGrid = document.getElementById("reg-grid");
+for (let i = 0; i <= 15; i++) {
+  const btn = document.createElement("button");
+  btn.className = "reg-btn";
+  btn.textContent = `R${i}`;
+  btn.onclick = () => insertText(`R${i}`);
+  regGrid.appendChild(btn);
+}
+
+// ── CodeMirror setup ──
+CodeMirror.defineMode("mcmc", function() {
+  const INSTRS = /^(NOP|LDR|ADD|SUB|AND|OR|NAND|XOR|HLT|JMP|LOD|STR)\b/;
+  const REGS   = /^R(1[0-5]|[0-9])\b/;
+  const BINARY = /^[01]{4}\b/;
+  const COMMENT = /^#.*/;
+
+  return {
+    token(stream) {
+      if (stream.eatSpace()) return null;
+      if (stream.match(COMMENT)) return "comment";
+      if (stream.match(INSTRS))  return "keyword";
+      if (stream.match(REGS))    return "variable";
+      if (stream.match(BINARY))  return "number";
+      stream.match(/\S+/);
+      return stream.eol() ? null : "error";
+    }
+  };
+});
+
+const editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+  mode: "mcmc",
+  theme: "material-darker",
+  lineNumbers: true,
+  tabSize: 4,
+  indentWithTabs: false,
+  autofocus: true,
+  extraKeys: { Tab: cm => cm.replaceSelection("    ") },
+});
+
+// Force editor to fill its container
+setTimeout(() => editor.refresh(), 50);
+
+function insertText(text) {
+  const doc = editor.getDoc();
+  const cursor = doc.getCursor();
+  doc.replaceRange(text, cursor);
+  editor.focus();
+}
+
+// ── Binary converter (decimal → binary) ──
+const decInput  = document.getElementById("dec-input");
+const decResult = document.getElementById("dec-result");
+const bitBoxes  = [document.getElementById("b3"), document.getElementById("b2"),
+                   document.getElementById("b1"), document.getElementById("b0")];
+
+decInput.addEventListener("input", () => {
+  let val = parseInt(decInput.value, 10);
+  if (isNaN(val) || val < 0 || val > 15) {
+    decResult.textContent = "????";
+    bitBoxes.forEach(b => { b.textContent = "?"; b.className = "bit-box off"; });
+    return;
+  }
+  const bin = val.toString(2).padStart(4, "0");
+  decResult.textContent = bin;
+  bin.split("").forEach((bit, i) => {
+    bitBoxes[i].textContent = bit;
+    bitBoxes[i].className = bit === "1" ? "bit-box on" : "bit-box off";
+  });
+  document.getElementById("bin-input").value = bin;
+  document.getElementById("bin-result").textContent = val;
+});
+
+// ── Binary converter (binary → decimal) ──
+const binInput  = document.getElementById("bin-input");
+const binResult = document.getElementById("bin-result");
+
+binInput.addEventListener("input", () => {
+  const raw = binInput.value.replace(/[^01]/g, "").slice(0, 4);
+  binInput.value = raw;
+  if (raw.length === 4) {
+    const val = parseInt(raw, 2);
+    binResult.textContent = val;
+    decInput.value = val;
+    raw.split("").forEach((bit, i) => {
+      bitBoxes[i].textContent = bit;
+      bitBoxes[i].className = bit === "1" ? "bit-box on" : "bit-box off";
+    });
+    decResult.textContent = raw;
+  } else {
+    binResult.textContent = "?";
+  }
+});
+
+function insertConverterValue() {
+  const bin = decResult.textContent;
+  if (bin === "????" || bin.length !== 4) return;
+  insertText(bin);
+}
+
+// ── Submit code ──
+function setStatus(msg, type) {
+  const el = document.getElementById("status-msg");
+  el.textContent = msg;
+  el.className = type;
+  if (type === "ok") setTimeout(() => { el.textContent = ""; el.className = ""; }, 4000);
+}
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : null;
+}
+
+// ── Script manager (localStorage) ──
+const STORAGE_KEY = "mcmc_scripts";
+
+function getScripts() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function renderScripts() {
+  const container = document.getElementById("saved-scripts");
+  const scripts = getScripts();
+  const names = Object.keys(scripts);
+  if (names.length === 0) {
+    container.innerHTML = '<span class="no-scripts">No saved scripts yet</span>';
+    return;
+  }
+  container.innerHTML = names.map(name => `
+    <div class="script-chip" onclick="loadScript('${CSS.escape(name)}')" title="Load '${name}'">
+      ${name}
+      <span class="chip-del" onclick="event.stopPropagation(); deleteScript('${CSS.escape(name)}')" title="Delete">✕</span>
+    </div>
+  `).join("");
+}
+
+function saveScript() {
+  const name = document.getElementById("script-name").value.trim();
+  const code = editor.getValue().trim();
+  if (!name) { setStatus("Enter a script name to save.", "err"); return; }
+  if (!code)  { setStatus("Nothing to save — editor is empty.", "err"); return; }
+  const scripts = getScripts();
+  scripts[name] = code;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(scripts));
+  renderScripts();
+  setStatus(`✓ Saved as "${name}"`, "ok");
+}
+
+function loadScript(name) {
+  const scripts = getScripts();
+  if (scripts[name]) {
+    editor.setValue(scripts[name]);
+    document.getElementById("script-name").value = name;
+    editor.focus();
+  }
+}
+
+function deleteScript(name) {
+  const scripts = getScripts();
+  delete scripts[name];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(scripts));
+  renderScripts();
+}
+
+renderScripts();
+
+async function submitCode() {
+  const name = document.getElementById("name-input").value.trim();
+  const code = editor.getValue().trim();
+
+  if (!name) { setStatus("Please enter your name first.", "err"); return; }
+  if (!code) { setStatus("Please write some code first.", "err"); return; }
+
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  try {
+    const res = await fetch("/IDE/submit/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken"),
+      },
+      body: JSON.stringify({ name, code }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setStatus("✓ " + data.message, "ok");
+    } else {
+      setStatus("✗ " + data.message, "err");
+    }
+  } catch {
+    setStatus("✗ Could not reach the server.", "err");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Send Code";
+  }
+}
+</script>
+
+</body>
+</html>

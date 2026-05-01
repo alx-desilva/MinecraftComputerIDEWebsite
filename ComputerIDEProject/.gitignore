@@ -1,0 +1,39 @@
+# Environment variables
+.env
+*.env
+key.env
+
+# Database
+db.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+
+.claude/
+claude/
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Django
+staticfiles/
+media/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
+
+# Fly.io
+.fly/

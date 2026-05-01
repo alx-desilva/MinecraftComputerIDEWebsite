@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Minecraft Computer IDE</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --green: #3fb950;
+      --cyan: #79c0ff;
+      --yellow: #e3b341;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      max-width: 600px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #1a2a1a;
+      border: 1px solid var(--green);
+      color: var(--green);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    h1 .accent { color: var(--green); }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 36px;
+    }
+
+    .btn-primary {
+      display: inline-block;
+      background: var(--green);
+      color: #0d1117;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 13px 36px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* ── Code preview card ── */
+    .code-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      text-align: left;
+      margin: 48px auto 0;
+      max-width: 420px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.9;
+    }
+
+    .code-card .card-title {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .kw  { color: var(--cyan);   font-weight: bold; }
+    .reg { color: #d2a8ff; }
+    .num { color: var(--yellow); }
+    .cmt { color: var(--muted);  font-style: italic; }
+
+    /* ── Feature pills ── */
+    .features {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 40px;
+      max-width: 560px;
+    }
+
+    .feature-pill {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .feature-pill strong { color: var(--text); }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 60px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="badge">Minecraft Computer Project</div>
+
+    <!--<h1>Write code for a<br /><span class="accent">real computer</span><br />built in Minecraft.</h1> -->
+
+    <p class="subtitle">
+      Use the browser-based IDE to write assembly programs,
+      send them to an operator,
+      and view your code being run in real time!
+    </p>
+
+    <a href="/IDE/" class="btn-primary">Open the IDE &rarr;</a>
+  </div>
+
+  <div class="code-card">
+    <div class="card-title">Example program</div>
+    <div><span class="cmt"># Load two values and add them</span></div>
+    <div><span class="kw">LDR</span> <span class="reg">R0</span> <span class="num">0101</span></div>
+    <div><span class="kw">LDR</span> <span class="reg">R1</span> <span class="num">0011</span></div>
+    <div><span class="kw">ADD</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span></div>
+    <div><span class="kw">HLT</span></div>
+  </div>
+
+  <div class="features">
+    <div class="feature-pill"><strong>Syntax highlighting</strong> as you type</div>
+    <div class="feature-pill"><strong>Clickable</strong> instruction blocks</div>
+    <div class="feature-pill"><strong>Binary converter</strong> built in</div>
+    <div class="feature-pill"><strong>Save</strong> multiple scripts locally</div>
+    <div class="feature-pill"><strong>Submit</strong> your code to the panel</div>
+  </div>
+
+  <footer>Minecraft Computer &mdash; Assembly IDE</footer>
+
+</body>
+</html>
