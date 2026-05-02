@@ -31,6 +31,12 @@ DEBUG = os.environ.get("DEBUG",'False') == "True"
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://cocoscomp.xyz',
+    'https://www.cocoscomp.xyz',
+    'https://computeride.fly.dev',
+]
+
 
 # Application definition
 
