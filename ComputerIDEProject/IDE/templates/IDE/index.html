@@ -433,7 +433,7 @@ const INSTRUCTIONS = [
   { name: "NAND", template: "NAND R0 R1 R2",   desc: "Bitwise NAND R0 & R1, save result in R2" },
   { name: "XOR",  template: "XOR R0 R1 R2",    desc: "Bitwise XOR R0 ^ R1, save result in R2" },
   { name: "HLT",  template: "HLT",             desc: "Stop the program" },
-  { name: "JMP",  template: "JMP 0000",        desc: "Jump to a line (binary address)" },
+  { name: "JMP",  template: "JMP 00000000",        desc: "Jump to a line (binary address)" },
   { name: "SCR",  template: "SCR R0",           desc: "Send register value to screen output" },
 ];
 
