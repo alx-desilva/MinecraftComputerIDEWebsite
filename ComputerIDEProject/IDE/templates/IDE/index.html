@@ -434,8 +434,7 @@ const INSTRUCTIONS = [
   { name: "XOR",  template: "XOR R0 R1 R2",    desc: "Bitwise XOR R0 ^ R1, save result in R2" },
   { name: "HLT",  template: "HLT",             desc: "Stop the program" },
   { name: "JMP",  template: "JMP 0000",        desc: "Jump to a line (binary address)" },
-  { name: "LOD",  template: "LOD R0 R1",       desc: "Load value from memory address in R1 → R0" },
-  { name: "STR",  template: "STR R0 R1",       desc: "Store R0 into memory address in R1" },
+  { name: "SCR",  template: "SCR R0",           desc: "Send register value to screen output" },
 ];
 
 // ── Build instruction buttons ──
@@ -460,7 +459,7 @@ for (let i = 0; i <= 15; i++) {
 
 // ── CodeMirror setup ──
 CodeMirror.defineMode("mcmc", function() {
-  const INSTRS = /^(NOP|LDR|ADD|SUB|AND|OR|NAND|XOR|HLT|JMP|LOD|STR)\b/;
+  const INSTRS = /^(NOP|LDR|ADD|SUB|AND|OR|NAND|XOR|HLT|JMP|SCR)\b/;
   const REGS   = /^R(1[0-5]|[0-9])\b/;
   const BINARY = /^[01]{4}\b/;
   const COMMENT = /^#.*/;
