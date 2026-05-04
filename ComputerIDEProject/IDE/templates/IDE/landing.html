@@ -30,7 +30,6 @@
       padding: 40px 20px;
     }
 
-    /* ── Hero ── */
     .hero {
       text-align: center;
       max-width: 600px;
@@ -66,6 +65,13 @@
       margin-bottom: 36px;
     }
 
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     .btn-primary {
       display: inline-block;
       background: var(--green);
@@ -79,7 +85,20 @@
     }
     .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
 
-    /* ── Code preview card ── */
+    .btn-secondary {
+      display: inline-block;
+      background: transparent;
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .btn-secondary:hover { border-color: var(--muted); transform: translateY(-1px); }
+
     .code-card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -108,7 +127,6 @@
     .num { color: var(--yellow); }
     .cmt { color: var(--muted);  font-style: italic; }
 
-    /* ── Feature pills ── */
     .features {
       display: flex;
       flex-wrap: wrap;
@@ -129,7 +147,6 @@
 
     .feature-pill strong { color: var(--text); }
 
-    /* ── Footer ── */
     footer {
       margin-top: 60px;
       font-size: 0.75rem;
@@ -142,15 +159,18 @@
   <div class="hero">
     <div class="badge">Minecraft Computer Project</div>
 
-    <!--<h1>Write code for a<br /><span class="accent">real computer</span><br />built in Minecraft.</h1> -->
+    <h1>Write code for a<br /><span class="accent">real computer</span><br />built in Minecraft.</h1>
 
     <p class="subtitle">
       Use the browser-based IDE to write assembly programs,
       send them to an operator,
-      and view your code being run in real time!
+      and watch your code run in real time.
     </p>
 
-    <a href="/IDE/" class="btn-primary">Open the IDE &rarr;</a>
+    <div class="btn-row">
+      <a href="/IDE/" class="btn-primary">Open the IDE &rarr;</a>
+      <a href="/docs/" class="btn-secondary">Command Reference</a>
+    </div>
   </div>
 
   <div class="code-card">

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Command Reference &mdash; Minecraft Computer IDE</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --panel: #161b22;
+      --border: #30363d;
+      --green: #3fb950;
+      --cyan: #79c0ff;
+      --yellow: #e3b341;
+      --purple: #d2a8ff;
+      --text: #e6edf3;
+      --muted: #8b949e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    .page-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .back-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: var(--text); }
+    .back-link::before { content: "← "; }
+
+    .page-title {
+      font-size: 1.9rem;
+      font-weight: 700;
+    }
+    .page-title .accent { color: var(--green); }
+
+    .page-sub {
+      margin-top: 6px;
+      font-size: 0.95rem;
+      color: var(--muted);
+    }
+
+    /* ── Section headers ── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 48px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Command card ── */
+    .cmd-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0 24px;
+      align-items: start;
+    }
+
+    @media (max-width: 520px) {
+      .cmd-card { grid-template-columns: 1fr; }
+    }
+
+    .cmd-left {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 2px;
+    }
+
+    .cmd-name {
+      font-family: 'Courier New', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .cmd-opcode {
+      font-family: 'Courier New', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      width: fit-content;
+    }
+
+    .cmd-right {}
+
+    .cmd-desc {
+      font-size: 0.95rem;
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .cmd-syntax {
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+
+    .kw  { color: var(--cyan);   font-weight: bold; }
+    .reg { color: var(--purple); }
+    .num { color: var(--yellow); }
+    .addr{ color: var(--green);  }
+    .cmt { color: var(--muted);  font-style: italic; }
+
+    .cmd-example-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    /* ── Registers quick-ref ── */
+    .reg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .reg-chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reg-chip .reg { font-weight: 600; }
+    .reg-chip .num { font-size: 0.72rem; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 72px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div>
+      <a href="/" class="back-link">Home</a>
+      <div class="page-title"><span class="accent">Command</span> Reference</div>
+      <div class="page-sub">Every instruction available in the Minecraft Computer assembly language.</div>
+    </div>
+    <a href="/IDE/" style="display:inline-block;background:var(--green);color:#0d1117;font-size:0.9rem;font-weight:700;padding:10px 24px;border-radius:8px;text-decoration:none;">Open IDE &rarr;</a>
+  </div>
+
+  <!-- ── Data / Load ── -->
+  <div class="section-label">Data</div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">LDR</span>
+      <span class="cmd-opcode">0001</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Load a binary value directly into a register. The value is written as a 4-bit binary number.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">LDR</span> <span class="reg">Rdest</span> <span class="num">value</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># Load 5 (0101) into R0</span><br>
+        <span class="kw">LDR</span> <span class="reg">R0</span> <span class="num">0101</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Arithmetic ── -->
+  <div class="section-label">Arithmetic</div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">ADD</span>
+      <span class="cmd-opcode">0010</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Add two registers together and store the result in a third register.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">ADD</span> <span class="reg">Ra</span> <span class="reg">Rb</span> <span class="reg">Rdest</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># R2 = R0 + R1</span><br>
+        <span class="kw">ADD</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">SUB</span>
+      <span class="cmd-opcode">0011</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Subtract the second register from the first and store the result in a third register.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">SUB</span> <span class="reg">Ra</span> <span class="reg">Rb</span> <span class="reg">Rdest</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># R2 = R0 - R1</span><br>
+        <span class="kw">SUB</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bitwise Logic ── -->
+  <div class="section-label">Bitwise Logic</div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">AND</span>
+      <span class="cmd-opcode">0100</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Bitwise AND two registers. Each output bit is 1 only if both input bits are 1.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">AND</span> <span class="reg">Ra</span> <span class="reg">Rb</span> <span class="reg">Rdest</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># R2 = R0 AND R1</span><br>
+        <span class="kw">AND</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">OR</span>
+      <span class="cmd-opcode">0101</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Bitwise OR two registers. Each output bit is 1 if either input bit is 1.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">OR</span> <span class="reg">Ra</span> <span class="reg">Rb</span> <span class="reg">Rdest</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># R2 = R0 OR R1</span><br>
+        <span class="kw">OR</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">NAND</span>
+      <span class="cmd-opcode">0110</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Bitwise NAND two registers. The inverse of AND — each output bit is 0 only if both input bits are 1.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">NAND</span> <span class="reg">Ra</span> <span class="reg">Rb</span> <span class="reg">Rdest</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># R2 = R0 NAND R1</span><br>
+        <span class="kw">NAND</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">XOR</span>
+      <span class="cmd-opcode">0111</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Bitwise XOR two registers. Each output bit is 1 if the input bits are different.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">XOR</span> <span class="reg">Ra</span> <span class="reg">Rb</span> <span class="reg">Rdest</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># R2 = R0 XOR R1</span><br>
+        <span class="kw">XOR</span> <span class="reg">R0</span> <span class="reg">R1</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Control Flow ── -->
+  <div class="section-label">Control Flow</div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">JMP</span>
+      <span class="cmd-opcode">1001</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Unconditionally jump to a memory address. Execution continues from that instruction onward.
+        The address is an 8-bit binary value.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">JMP</span> <span class="addr">address</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># Jump to address 00000000 (start)</span><br>
+        <span class="kw">JMP</span> <span class="addr">00000000</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">HLT</span>
+      <span class="cmd-opcode">1000</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Halt the computer. Execution stops immediately. Every program should end with HLT.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">HLT</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">NOP</span>
+      <span class="cmd-opcode">0000</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        No operation. The computer does nothing for one clock cycle. Useful for timing or padding.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">NOP</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Output ── -->
+  <div class="section-label">Output</div>
+
+  <div class="cmd-card">
+    <div class="cmd-left">
+      <span class="cmd-name">SCR</span>
+      <span class="cmd-opcode">1010</span>
+    </div>
+    <div class="cmd-right">
+      <p class="cmd-desc">
+        Output the value of a register to the screen display.
+      </p>
+      <div class="cmd-syntax">
+        <span class="kw">SCR</span> <span class="reg">Rsrc</span>
+      </div>
+      <div class="cmd-example-label">Example</div>
+      <div class="cmd-syntax">
+        <span class="cmt"># Display the value in R2</span><br>
+        <span class="kw">SCR</span> <span class="reg">R2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Registers ── -->
+  <div class="section-label">Registers (R0 &ndash; R15)</div>
+
+  <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px 24px;">
+    <p style="font-size:0.9rem;color:var(--muted);margin-bottom:16px;line-height:1.6;">
+      There are 16 general-purpose registers, <span style="color:var(--purple);font-family:'Courier New',monospace;">R0</span>
+      through <span style="color:var(--purple);font-family:'Courier New',monospace;">R15</span>.
+      Each holds a 4-bit value. Any register can be used as a source or destination in any instruction.
+    </p>
+    <div class="reg-grid">
+      <div class="reg-chip"><span class="reg">R0</span><span class="num">0000</span></div>
+      <div class="reg-chip"><span class="reg">R1</span><span class="num">0001</span></div>
+      <div class="reg-chip"><span class="reg">R2</span><span class="num">0010</span></div>
+      <div class="reg-chip"><span class="reg">R3</span><span class="num">0011</span></div>
+      <div class="reg-chip"><span class="reg">R4</span><span class="num">0100</span></div>
+      <div class="reg-chip"><span class="reg">R5</span><span class="num">0101</span></div>
+      <div class="reg-chip"><span class="reg">R6</span><span class="num">0110</span></div>
+      <div class="reg-chip"><span class="reg">R7</span><span class="num">0111</span></div>
+      <div class="reg-chip"><span class="reg">R8</span><span class="num">1000</span></div>
+      <div class="reg-chip"><span class="reg">R9</span><span class="num">1001</span></div>
+      <div class="reg-chip"><span class="reg">R10</span><span class="num">1010</span></div>
+      <div class="reg-chip"><span class="reg">R11</span><span class="num">1011</span></div>
+      <div class="reg-chip"><span class="reg">R12</span><span class="num">1100</span></div>
+      <div class="reg-chip"><span class="reg">R13</span><span class="num">1101</span></div>
+      <div class="reg-chip"><span class="reg">R14</span><span class="num">1110</span></div>
+      <div class="reg-chip"><span class="reg">R15</span><span class="num">1111</span></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Minecraft Computer &mdash; Assembly IDE</footer>
+</body>
+</html>
